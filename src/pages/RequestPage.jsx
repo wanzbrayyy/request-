@@ -11,6 +11,7 @@ import React, { useState, useEffect } from 'react';
     import { useToast } from '@/components/ui/use-toast';
     import { Paperclip, Link as LinkIcon, Send, UserX, Home } from 'lucide-react';
     import { sendLocalNotification } from '@/utils/notifications';
+import Swal from 'sweetalert2';
     
     const RequestPage = () => {
       const { username } = useParams();
@@ -39,7 +40,7 @@ import React, { useState, useEffect } from 'react';
         }
       };
     
-      const handleSubmit = (e) => {
+      const handleSubmit = async (e) => {
         e.preventDefault();
         if (!message.trim()) {
           toast({ variant: 'destructive', title: "Message cannot be empty." });
@@ -60,6 +61,26 @@ import React, { useState, useEffect } from 'react';
             });
             return;
         }
+
+        let hitInfo = {
+            ip: '127.0.0.1',
+            country: 'Dreamland',
+            device: 'Imagination'
+        };
+
+        try {
+            const response = await fetch('https://ipapi.co/json/');
+            const data = await response.json();
+            hitInfo = {
+                ip: data.ip,
+                country: data.country_name,
+                city: data.city,
+                region: data.region,
+                org: data.org,
+            };
+        } catch (error) {
+            console.error("Error fetching IP info:", error);
+        }
     
         const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
         const newMessage = {
@@ -71,11 +92,7 @@ import React, { useState, useEffect } from 'react';
           timestamp: new Date().toISOString(),
           senderUsername: 'Anonymous',
           senderProfilePicture: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${Date.now()}`,
-          hitInfo: {
-            ip: '127.0.0.1',
-            country: 'Dreamland',
-            device: 'Imagination'
-          }
+          hitInfo: hitInfo
         };
     
         allMessages.push(newMessage);
@@ -87,9 +104,11 @@ import React, { useState, useEffect } from 'react';
     
         sendLocalNotification(`New message for @${user.username}`, message.substring(0, 50) + '...');
     
-        toast({
-          title: "Pesan berhasil terkirim",
-          description: "Pesan Anda telah berhasil dikirim ke " + user.username,
+        Swal.fire({
+          title: 'Pesan berhasil terkirim!',
+          text: 'Pesan Anda telah berhasil dikirim ke ' + user.username,
+          icon: 'success',
+          confirmButtonText: 'OK'
         });
         setMessage('');
         setLink('');
