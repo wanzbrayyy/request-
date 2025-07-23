@@ -45,6 +45,21 @@ import React, { useState, useEffect } from 'react';
           toast({ variant: 'destructive', title: "Message cannot be empty." });
           return;
         }
+
+        const now = new Date().getTime();
+        const requestHistory = JSON.parse(localStorage.getItem('requestHistory') || '{}');
+        const userRequestHistory = requestHistory[user.username] || [];
+
+        const recentRequests = userRequestHistory.filter(timestamp => now - timestamp < 3600000); // 1 hour
+
+        if (recentRequests.length >= 20) {
+            toast({
+                variant: "destructive",
+                title: "Rate Limit Exceeded",
+                description: "You have sent too many messages. Please try again later.",
+            });
+            return;
+        }
     
         const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
         const newMessage = {
@@ -65,10 +80,17 @@ import React, { useState, useEffect } from 'react';
     
         allMessages.push(newMessage);
         localStorage.setItem('messages', JSON.stringify(allMessages));
+
+        recentRequests.push(now);
+        requestHistory[user.username] = recentRequests;
+        localStorage.setItem('requestHistory', JSON.stringify(requestHistory));
     
         sendLocalNotification(`New message for @${user.username}`, message.substring(0, 50) + '...');
     
-        toast({ title: t('message_sent') });
+        toast({
+          title: "Pesan berhasil terkirim",
+          description: "Pesan Anda telah berhasil dikirim ke " + user.username,
+        });
         setMessage('');
         setLink('');
         setImage(null);
