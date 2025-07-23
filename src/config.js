@@ -1,8 +1,8 @@
 
 export const midtransConfig = {
-        isProduction: false,
-        clientKey: 'YOUR_MIDTRANS_CLIENT_KEY_HERE',
-        serverKey: 'YOUR_MIDTRANS_SERVER_KEY_HERE'
+        isProduction: true,
+        clientKey: 'Mid-client-IoIOg2RqJNZgKpY6',
+        serverKey: 'Mid-server-zvgGUiY7SS-HS_qhWLkqZQuL'
     };
     
     export const stripeConfig = {
