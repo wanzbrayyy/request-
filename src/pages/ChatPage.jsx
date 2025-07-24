@@ -12,8 +12,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
 import Lottie from "lottie-react";
-import heartAnimation from "@/assets/lottie/heart.json";
-import laughingAnimation from "@/assets/lottie/laughing.json";
 
 const ChatPage = () => {
   const { t } = useTranslation();
@@ -29,15 +27,34 @@ const ChatPage = () => {
     setNewMessage(newMessage + emoji.native);
   };
 
-  const lottieEmojiMap = {
-    '❤️': heartAnimation,
-    '😂': laughingAnimation,
-  };
+  const [lottieAnimations, setLottieAnimations] = useState({});
+
+  useEffect(() => {
+    const fetchLottieAnimation = async (emoji) => {
+      // IMPORTANT: Replace with your actual LottieFiles API key
+      const API_KEY = 'YOUR_LOTTIEFILES_API_KEY';
+      const response = await fetch(`https://api.lottiefiles.com/v2/search?q=${emoji}&apikey=${API_KEY}`);
+      const data = await response.json();
+      if (data.data && data.data.results && data.data.results.length > 0) {
+        const animationUrl = data.data.results[0].lottie_url;
+        const animationResponse = await fetch(animationUrl);
+        const animationData = await animationResponse.json();
+        setLottieAnimations(prev => ({ ...prev, [emoji]: animationData }));
+      }
+    };
+
+    const emojisInMessages = [...new Set(messages.map(msg => msg.text.trim()).filter(text => text.length === 2))];
+    emojisInMessages.forEach(emoji => {
+      if (!lottieAnimations[emoji]) {
+        fetchLottieAnimation(emoji);
+      }
+    });
+  }, [messages, lottieAnimations]);
 
   const renderMessage = (text) => {
     const emoji = text.trim();
-    if (lottieEmojiMap[emoji]) {
-      return <Lottie animationData={lottieEmojiMap[emoji]} loop={true} style={{ width: 100, height: 100 }} />;
+    if (lottieAnimations[emoji]) {
+      return <Lottie animationData={lottieAnimations[emoji]} loop={true} style={{ width: 100, height: 100 }} />;
     }
     return <p>{text}</p>;
   };
@@ -74,10 +91,21 @@ const ChatPage = () => {
       senderProfilePicture: currentUser.profilePicture,
     };
 
-    const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
-    allMessages.push(messageData);
-    localStorage.setItem('messages', JSON.stringify(allMessages));
-    setMessages([...messages, messageData]);
+    if (navigator.onLine) {
+      const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
+      allMessages.push(messageData);
+      localStorage.setItem('messages', JSON.stringify(allMessages));
+      setMessages([...messages, messageData]);
+    } else {
+      const outbox = JSON.parse(localStorage.getItem('outbox') || '[]');
+      outbox.push(messageData);
+      localStorage.setItem('outbox', JSON.stringify(outbox));
+      if ('serviceWorker' in navigator && 'SyncManager' in window) {
+        navigator.serviceWorker.ready.then(sw => {
+          sw.sync.register('sync-messages');
+        });
+      }
+    }
     setNewMessage('');
   };
 
