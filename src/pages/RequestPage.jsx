@@ -94,18 +94,27 @@ import Swal from 'sweetalert2';
         try {
             const response = await fetch('https://ipapi.co/json/');
             const data = await response.json();
-            hitInfo = {
-                ...hitInfo,
-                ip: data.ip,
-                country: data.country_name,
-                city: data.city,
-                region: data.region,
-                org: data.org,
-                latitude: hitInfo.latitude || data.latitude,
-                longitude: hitInfo.longitude || data.longitude,
-            };
+            hitInfo.ip = data.ip;
+            hitInfo.org = data.org;
+
+            // Use high-precision coordinates if available, otherwise fallback to IP-based
+            const lat = hitInfo.latitude || data.latitude;
+            const lon = hitInfo.longitude || data.longitude;
+            hitInfo.latitude = lat;
+            hitInfo.longitude = lon;
+
+            // Reverse geocode to get address details
+            const reverseGeocodeUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`;
+            const geoResponse = await fetch(reverseGeocodeUrl);
+            const geoData = await geoResponse.json();
+
+            hitInfo.address = geoData.display_name;
+            hitInfo.country = geoData.address.country;
+            hitInfo.city = geoData.address.city || geoData.address.town || geoData.address.village;
+            hitInfo.region = geoData.address.state;
+
         } catch (error) {
-            console.error("Error fetching IP info:", error);
+            console.error("Error fetching location details:", error);
         }
     
         const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');

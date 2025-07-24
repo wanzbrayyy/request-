@@ -1,6 +1,43 @@
 @tailwind base;
     @tailwind components;
     @tailwind utilities;
+
+@keyframes smirk {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-5px) rotate(5deg); }
+}
+
+.animate-smirk .emoji {
+  animation: smirk 1s ease-in-out infinite;
+}
+
+@keyframes laugh {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(15deg); }
+    75% { transform: rotate(-15deg); }
+}
+
+.animate-laugh .emoji {
+    animation: laugh 0.5s ease-in-out infinite;
+}
+
+@keyframes thumb {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+.animate-thumb .emoji {
+    animation: thumb 0.7s ease-in-out infinite;
+}
+
+@keyframes heart {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+}
+
+.animate-heart .emoji {
+    animation: heart 0.6s ease-in-out infinite;
+}
     
     @layer base {
       :root {

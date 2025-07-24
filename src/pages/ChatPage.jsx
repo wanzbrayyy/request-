@@ -34,16 +34,32 @@ const ChatPage = () => {
     '❤️': 'https://media.tenor.com/o-q_28pTjV8AAAAM/heart-love.gif',
   };
 
+  const animatedEmojiMap = {
+    '😏': 'animate-smirk',
+    '😂': 'animate-laugh',
+    '👍': 'animate-thumb',
+    '❤️': 'animate-heart',
+  };
+
   const parsedMessage = (text) => {
     let processedText = text;
-    for (const [emoji, gif] of Object.entries(emojiGifMap)) {
-      if (processedText.includes(emoji)) {
-        processedText = processedText.replace(new RegExp(emoji, 'g'), `<img src="${gif}" alt="${emoji}" class="inline-block h-8 w-8" />`);
-      }
+    for (const [emoji, className] of Object.entries(animatedEmojiMap)) {
+        if (processedText.includes(emoji)) {
+            processedText = processedText.replace(new RegExp(emoji, 'g'), `<span class="${className}">${emoji}</span>`);
+        }
     }
     return twemoji.parse(processedText, {
         folder: 'svg',
-        ext: '.svg'
+        ext: '.svg',
+        callback: function(icon, options) {
+            switch (icon) {
+                case 'a9':      // © copyright
+                case 'ae':      // ® registered trademark
+                case '2122':    // ™ trademark
+                    return false;
+            }
+            return ''.concat(options.base, options.size, '/', icon, options.ext);
+        }
     });
   };
 

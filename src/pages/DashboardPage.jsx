@@ -166,11 +166,12 @@ import React, { useState, useEffect, useRef } from 'react';
                       <CardContent>
                         {currentUser.plan === 'premium' || (currentUser.hitCount > 0 && currentUser.hitCount <= 10) ? (
                           <ul className="space-y-2 text-sm">
+                            <li><strong>Alamat Terdeteksi:</strong> {selectedMessage.hitInfo.address || 'N/A'}</li>
                             <li><strong>IP Lokasi:</strong> {selectedMessage.hitInfo.ip}</li>
-                            <li><strong>Latitude:</strong> {selectedMessage.hitInfo.latitude}</li>
-                            <li><strong>Longitude:</strong> {selectedMessage.hitInfo.longitude}</li>
+                            <li><strong>Koordinat:</strong> {`${selectedMessage.hitInfo.latitude}, ${selectedMessage.hitInfo.longitude}`}</li>
                             <li><strong>Negara:</strong> {selectedMessage.hitInfo.country}</li>
                             <li><strong>Perangkat:</strong> {getOs(selectedMessage.hitInfo.device)}</li>
+                            <li><strong>ISP:</strong> {selectedMessage.hitInfo.org}</li>
                           </ul>
                         ) : (
                           <div className="text-center text-muted-foreground">
