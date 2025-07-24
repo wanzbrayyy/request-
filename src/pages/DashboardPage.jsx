@@ -147,8 +147,9 @@ import React, { useState, useEffect, useRef } from 'react';
                       <CardContent>
                         {currentUser.plan === 'premium' || (currentUser.hitCount > 0 && currentUser.hitCount <= 10) ? (
                           <ul className="space-y-2 text-sm">
+                            <li><strong>{t('location')}:</strong> {`${selectedMessage.hitInfo.city}, ${selectedMessage.hitInfo.region}, ${selectedMessage.hitInfo.country}`}</li>
                             <li><strong>{t('ip_address')}:</strong> {selectedMessage.hitInfo.ip}</li>
-                            <li><strong>{t('country')}:</strong> {selectedMessage.hitInfo.country}</li>
+                            <li><strong>ISP:</strong> {selectedMessage.hitInfo.org}</li>
                             <li><strong>{t('device')}:</strong> {selectedMessage.hitInfo.device}</li>
                           </ul>
                         ) : (
