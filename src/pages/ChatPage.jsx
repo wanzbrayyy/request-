@@ -11,7 +11,9 @@ import { Send, ArrowLeft, Smile } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
-import AnimatedEmojiMessage from '@/components/AnimatedEmojiMessage';
+import Lottie from "lottie-react";
+import heartAnimation from "@/assets/lottie/heart.json";
+import laughingAnimation from "@/assets/lottie/laughing.json";
 
 const ChatPage = () => {
   const { t } = useTranslation();
@@ -25,6 +27,19 @@ const ChatPage = () => {
 
   const addEmoji = (emoji) => {
     setNewMessage(newMessage + emoji.native);
+  };
+
+  const lottieEmojiMap = {
+    '❤️': heartAnimation,
+    '😂': laughingAnimation,
+  };
+
+  const renderMessage = (text) => {
+    const emoji = text.trim();
+    if (lottieEmojiMap[emoji]) {
+      return <Lottie animationData={lottieEmojiMap[emoji]} loop={true} style={{ width: 100, height: 100 }} />;
+    }
+    return <p>{text}</p>;
   };
 
 
@@ -96,8 +111,8 @@ const ChatPage = () => {
         <CardContent className="flex-grow overflow-y-auto p-4 space-y-4">
           {messages.map(msg => (
             <div key={msg.id} className={`flex flex-col gap-1 ${msg.senderUsername === currentUser.username ? 'items-end' : 'items-start'}`}>
-              <div className={`p-3 rounded-lg max-w-xs ${msg.senderUsername === currentUser.username ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                <AnimatedEmojiMessage text={msg.text} />
+              <div className={`rounded-lg max-w-xs ${msg.senderUsername === currentUser.username ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                {renderMessage(msg.text)}
               </div>
               <p className="text-xs text-muted-foreground">{new Date(msg.timestamp).toLocaleTimeString()}</p>
             </div>
