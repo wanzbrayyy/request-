@@ -87,24 +87,8 @@ import Swal from 'sweetalert2';
             const position = await getGeolocation();
             hitInfo.latitude = position.coords.latitude;
             hitInfo.longitude = position.coords.longitude;
-        } catch (error) {
-            console.warn("Could not get real-time location, falling back to IP-based location.", error.message);
-        }
 
-        try {
-            const response = await fetch('https://ipapi.co/json/');
-            const data = await response.json();
-            hitInfo.ip = data.ip;
-            hitInfo.org = data.org;
-
-            // Use high-precision coordinates if available, otherwise fallback to IP-based
-            const lat = hitInfo.latitude || data.latitude;
-            const lon = hitInfo.longitude || data.longitude;
-            hitInfo.latitude = lat;
-            hitInfo.longitude = lon;
-
-            // Reverse geocode to get address details
-            const reverseGeocodeUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`;
+            const reverseGeocodeUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${hitInfo.latitude}&lon=${hitInfo.longitude}`;
             const geoResponse = await fetch(reverseGeocodeUrl);
             const geoData = await geoResponse.json();
 
@@ -113,8 +97,21 @@ import Swal from 'sweetalert2';
             hitInfo.city = geoData.address.city || geoData.address.town || geoData.address.village;
             hitInfo.region = geoData.address.state;
 
-        } catch (error) {
-            console.error("Error fetching location details:", error);
+        } catch (geoError) {
+            console.warn("Could not get real-time location, falling back to IP-based location.", geoError.message);
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                hitInfo.ip = data.ip;
+                hitInfo.org = data.org;
+                hitInfo.latitude = data.latitude;
+                hitInfo.longitude = data.longitude;
+                hitInfo.country = data.country_name;
+                hitInfo.city = data.city;
+                hitInfo.region = data.region;
+            } catch (ipError) {
+                console.error("Error fetching IP-based location details:", ipError);
+            }
         }
     
         const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');

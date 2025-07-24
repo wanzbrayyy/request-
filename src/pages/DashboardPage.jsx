@@ -11,6 +11,7 @@ import React, { useState, useEffect, useRef } from 'react';
     import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
     import { Download, Link as LinkIcon, Eye, ShieldAlert } from 'lucide-react';
     import { useToast } from '@/components/ui/use-toast';
+import InstallAppAlert from '@/components/InstallAppAlert';
     
     const getOs = (userAgent) => {
         if (/android/i.test(userAgent)) {
@@ -37,7 +38,28 @@ import React, { useState, useEffect, useRef } from 'react';
       const { toast } = useToast();
       const [messages, setMessages] = useState([]);
       const [selectedMessage, setSelectedMessage] = useState(null);
+      const [showInstallAlert, setShowInstallAlert] = useState(false);
       const messageCardRef = useRef(null);
+
+      useEffect(() => {
+        const appInstalled = localStorage.getItem('appInstalled');
+        if (!appInstalled) {
+          setShowInstallAlert(true);
+        }
+      }, []);
+
+      const handleInstall = () => {
+        // In a real scenario, you would point to your GitHub releases page
+        window.open('https://github.com/your-repo/your-project/releases', '_blank');
+        localStorage.setItem('appInstalled', 'true');
+        const newHitCount = (currentUser.hitCount || 0) + 20;
+        updateUser({ hitCount: newHitCount });
+        setShowInstallAlert(false);
+        toast({
+          title: "Thank you for installing!",
+          description: "20 hits have been added to your account.",
+        });
+      };
     
       useEffect(() => {
         const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
@@ -95,6 +117,7 @@ import React, { useState, useEffect, useRef } from 'react';
             transition={{ duration: 0.5 }}
             className="space-y-6"
           >
+            {showInstallAlert && <InstallAppAlert onInstall={handleInstall} />}
             <h1 className="text-3xl font-bold tracking-tight">{t('inbox')}</h1>
             {messages.length === 0 ? (
               <Card className="text-center py-12 glassmorphism">
