@@ -11,7 +11,7 @@ import { Send, ArrowLeft, Smile } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
-import twemoji from 'twemoji';
+import AnimatedEmojiMessage from '@/components/AnimatedEmojiMessage';
 
 const ChatPage = () => {
   const { t } = useTranslation();
@@ -27,41 +27,6 @@ const ChatPage = () => {
     setNewMessage(newMessage + emoji.native);
   };
 
-  const emojiGifMap = {
-    '😏': 'https://media.tenor.com/x8v1oNUOmg4AAAAM/smirk-smirking-face.gif',
-    '😂': 'https://media.tenor.com/b-2_3Gq_t0EAAAAM/laughing-emoji-lol.gif',
-    '👍': 'https://media.tenor.com/p1G_iVf3-vsAAAAM/thumbs-up-emoji.gif',
-    '❤️': 'https://media.tenor.com/o-q_28pTjV8AAAAM/heart-love.gif',
-  };
-
-  const animatedEmojiMap = {
-    '😏': 'animate-smirk',
-    '😂': 'animate-laugh',
-    '👍': 'animate-thumb',
-    '❤️': 'animate-heart',
-  };
-
-  const parsedMessage = (text) => {
-    let processedText = text;
-    for (const [emoji, className] of Object.entries(animatedEmojiMap)) {
-        if (processedText.includes(emoji)) {
-            processedText = processedText.replace(new RegExp(emoji, 'g'), `<span class="${className}">${emoji}</span>`);
-        }
-    }
-    return twemoji.parse(processedText, {
-        folder: 'svg',
-        ext: '.svg',
-        callback: function(icon, options) {
-            switch (icon) {
-                case 'a9':      // © copyright
-                case 'ae':      // ® registered trademark
-                case '2122':    // ™ trademark
-                    return false;
-            }
-            return ''.concat(options.base, options.size, '/', icon, options.ext);
-        }
-    });
-  };
 
   useEffect(() => {
     const allUsers = JSON.parse(localStorage.getItem('users') || '[]');
@@ -131,10 +96,9 @@ const ChatPage = () => {
         <CardContent className="flex-grow overflow-y-auto p-4 space-y-4">
           {messages.map(msg => (
             <div key={msg.id} className={`flex flex-col gap-1 ${msg.senderUsername === currentUser.username ? 'items-end' : 'items-start'}`}>
-              <div
-                className={`p-3 rounded-lg max-w-xs ${msg.senderUsername === currentUser.username ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
-                dangerouslySetInnerHTML={{ __html: parsedMessage(msg.text) }}
-              />
+              <div className={`p-3 rounded-lg max-w-xs ${msg.senderUsername === currentUser.username ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                <AnimatedEmojiMessage text={msg.text} />
+              </div>
               <p className="text-xs text-muted-foreground">{new Date(msg.timestamp).toLocaleTimeString()}</p>
             </div>
           ))}
