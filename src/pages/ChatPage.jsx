@@ -11,7 +11,7 @@ import { Send, ArrowLeft, Smile } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
-import Lottie from "lottie-react";
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 const ChatPage = () => {
   const { t } = useTranslation();
@@ -27,34 +27,17 @@ const ChatPage = () => {
     setNewMessage(newMessage + emoji.native);
   };
 
-  const [lottieAnimations, setLottieAnimations] = useState({});
-
-  useEffect(() => {
-    const fetchLottieAnimation = async (emoji) => {
-      // IMPORTANT: Replace with your actual LottieFiles API key
-      const API_KEY = 'YOUR_LOTTIEFILES_API_KEY';
-      const response = await fetch(`https://api.lottiefiles.com/v2/search?q=${emoji}&apikey=${API_KEY}`);
-      const data = await response.json();
-      if (data.data && data.data.results && data.data.results.length > 0) {
-        const animationUrl = data.data.results[0].lottie_url;
-        const animationResponse = await fetch(animationUrl);
-        const animationData = await animationResponse.json();
-        setLottieAnimations(prev => ({ ...prev, [emoji]: animationData }));
-      }
-    };
-
-    const emojisInMessages = [...new Set(messages.map(msg => msg.text.trim()).filter(text => text.length === 2))];
-    emojisInMessages.forEach(emoji => {
-      if (!lottieAnimations[emoji]) {
-        fetchLottieAnimation(emoji);
-      }
-    });
-  }, [messages, lottieAnimations]);
+  const lottieEmojiMap = {
+    '❤️': 'https://lottie.host/8da54823-3908-4663-9545-037e90958814/P33a7n2N1Q.lottie',
+    '😂': 'https://lottie.host/2787688a-b461-4993-9549-105068427549/Q4a2QvD1pU.lottie',
+    '👍': 'https://lottie.host/a3f654b2-3831-48a6-9f88-4286663f7073/fJp8rSj2Xg.lottie',
+    '😏': 'https://lottie.host/06fb3f9d-e3fa-4074-8ba1-207ca2fd66d7/WnH6OIVa0a.lottie',
+  };
 
   const renderMessage = (text) => {
     const emoji = text.trim();
-    if (lottieAnimations[emoji]) {
-      return <Lottie animationData={lottieAnimations[emoji]} loop={true} style={{ width: 100, height: 100 }} />;
+    if (lottieEmojiMap[emoji]) {
+      return <DotLottieReact src={lottieEmojiMap[emoji]} loop autoplay style={{ width: 100, height: 100 }} />;
     }
     return <p>{text}</p>;
   };
