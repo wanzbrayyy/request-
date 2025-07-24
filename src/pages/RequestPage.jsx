@@ -23,6 +23,7 @@ import Swal from 'sweetalert2';
       const [image, setImage] = useState(null);
       const [imagePreview, setImagePreview] = useState('');
       const [isLoading, setIsLoading] = useState(true);
+      const [isSending, setIsSending] = useState(false);
     
       useEffect(() => {
         const users = JSON.parse(localStorage.getItem('users') || '[]');
@@ -63,15 +64,19 @@ import Swal from 'sweetalert2';
         }
 
         let hitInfo = {
-            ip: '127.0.0.1',
-            country: 'Dreamland',
-            device: 'Imagination'
+            ip: 'N/A',
+            country: 'N/A',
+            city: 'N/A',
+            region: 'N/A',
+            org: 'N/A',
+            device: navigator.userAgent,
         };
 
         try {
             const response = await fetch('https://ipapi.co/json/');
             const data = await response.json();
             hitInfo = {
+                ...hitInfo,
                 ip: data.ip,
                 country: data.country_name,
                 city: data.city,
@@ -90,7 +95,7 @@ import Swal from 'sweetalert2';
           link: link,
           image: imagePreview,
           timestamp: new Date().toISOString(),
-          senderUsername: 'Anonymous',
+          senderUsername: `Anonymous-${Date.now()}`,
           senderProfilePicture: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${Date.now()}`,
           hitInfo: hitInfo
         };
@@ -114,6 +119,8 @@ import Swal from 'sweetalert2';
         setLink('');
         setImage(null);
         setImagePreview('');
+        setIsSending(true);
+        setTimeout(() => setIsSending(false), 5000);
       };
     
       if (isLoading) {
@@ -197,8 +204,8 @@ import Swal from 'sweetalert2';
                   )}
                 </CardContent>
                 <CardFooter>
-                  <Button type="submit" className="w-full">
-                    <Send className="mr-2 h-4 w-4" /> {t('send')}
+                  <Button type="submit" className="w-full" disabled={isSending}>
+                    {isSending ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : <><Send className="mr-2 h-4 w-4" /> {t('send')}</>}
                   </Button>
                 </CardFooter>
               </form>
