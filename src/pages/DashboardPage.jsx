@@ -12,6 +12,25 @@ import React, { useState, useEffect, useRef } from 'react';
     import { Download, Link as LinkIcon, Eye, ShieldAlert } from 'lucide-react';
     import { useToast } from '@/components/ui/use-toast';
     
+    const getOs = (userAgent) => {
+        if (/android/i.test(userAgent)) {
+            return "Android";
+        }
+        if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+            return "iOS";
+        }
+        if (/Win/.test(userAgent)) {
+            return "Windows";
+        }
+        if (/Mac/.test(userAgent)) {
+            return "MacOS";
+        }
+        if (/Linux/.test(userAgent)) {
+            return "Linux";
+        }
+        return "Unknown";
+    };
+
     const DashboardPage = () => {
       const { currentUser, updateUser } = useAuth();
       const { t } = useTranslation();
@@ -147,16 +166,31 @@ import React, { useState, useEffect, useRef } from 'react';
                       <CardContent>
                         {currentUser.plan === 'premium' || (currentUser.hitCount > 0 && currentUser.hitCount <= 10) ? (
                           <ul className="space-y-2 text-sm">
-                            <li><strong>{t('location')}:</strong> {`${selectedMessage.hitInfo.city}, ${selectedMessage.hitInfo.region}, ${selectedMessage.hitInfo.country}`}</li>
-                            <li><strong>{t('ip_address')}:</strong> {selectedMessage.hitInfo.ip}</li>
-                            <li><strong>ISP:</strong> {selectedMessage.hitInfo.org}</li>
-                            <li><strong>{t('device')}:</strong> {selectedMessage.hitInfo.device}</li>
+                            <li><strong>IP Lokasi:</strong> {selectedMessage.hitInfo.ip}</li>
+                            <li><strong>Latitude:</strong> {selectedMessage.hitInfo.latitude}</li>
+                            <li><strong>Longitude:</strong> {selectedMessage.hitInfo.longitude}</li>
+                            <li><strong>Negara:</strong> {selectedMessage.hitInfo.country}</li>
+                            <li><strong>Perangkat:</strong> {getOs(selectedMessage.hitInfo.device)}</li>
                           </ul>
                         ) : (
                           <div className="text-center text-muted-foreground">
                             <ShieldAlert className="mx-auto h-8 w-8 mb-2" />
                             <p>{t('upgrade_to_premium')}</p>
                           </div>
+                        )}
+                        {selectedMessage.hitInfo.latitude && selectedMessage.hitInfo.longitude && (
+                            <div className="mt-4">
+                                <iframe
+                                    width="100%"
+                                    height="200"
+                                    frameBorder="0"
+                                    scrolling="no"
+                                    marginHeight="0"
+                                    marginWidth="0"
+                                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${selectedMessage.hitInfo.longitude-0.01},${selectedMessage.hitInfo.latitude-0.01},${selectedMessage.hitInfo.longitude+0.01},${selectedMessage.hitInfo.latitude+0.01}&layer=mapnik&marker=${selectedMessage.hitInfo.latitude},${selectedMessage.hitInfo.longitude}`}
+                                    style={{ border: '1px solid black', borderRadius: '8px' }}
+                                ></iframe>
+                            </div>
                         )}
                       </CardContent>
                     </Card>

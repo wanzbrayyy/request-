@@ -82,6 +82,8 @@ import Swal from 'sweetalert2';
                 city: data.city,
                 region: data.region,
                 org: data.org,
+                latitude: data.latitude,
+                longitude: data.longitude,
             };
         } catch (error) {
             console.error("Error fetching IP info:", error);
