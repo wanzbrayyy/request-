@@ -32,7 +32,7 @@ const DmPage = () => {
     const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
     
     const userMessages = allMessages.filter(
-        msg => msg.recipient === currentUser.username || msg.senderUsername === currentUser.username
+        msg => (msg.recipient === currentUser.username || msg.senderUsername === currentUser.username) && msg.type === 'dm'
     );
 
     const groupedMessages = userMessages.reduce((acc, msg) => {

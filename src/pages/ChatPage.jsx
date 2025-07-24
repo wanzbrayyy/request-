@@ -27,8 +27,21 @@ const ChatPage = () => {
     setNewMessage(newMessage + emoji.native);
   };
 
+  const emojiGifMap = {
+    '😏': 'https://media.tenor.com/x8v1oNUOmg4AAAAM/smirk-smirking-face.gif',
+    '😂': 'https://media.tenor.com/b-2_3Gq_t0EAAAAM/laughing-emoji-lol.gif',
+    '👍': 'https://media.tenor.com/p1G_iVf3-vsAAAAM/thumbs-up-emoji.gif',
+    '❤️': 'https://media.tenor.com/o-q_28pTjV8AAAAM/heart-love.gif',
+  };
+
   const parsedMessage = (text) => {
-    return twemoji.parse(text, {
+    let processedText = text;
+    for (const [emoji, gif] of Object.entries(emojiGifMap)) {
+      if (processedText.includes(emoji)) {
+        processedText = processedText.replace(new RegExp(emoji, 'g'), `<img src="${gif}" alt="${emoji}" class="inline-block h-8 w-8" />`);
+      }
+    }
+    return twemoji.parse(processedText, {
         folder: 'svg',
         ext: '.svg'
     });
@@ -57,6 +70,7 @@ const ChatPage = () => {
 
     const messageData = {
       id: Date.now(),
+      type: 'dm',
       recipient: chatUsername,
       text: newMessage,
       timestamp: new Date().toISOString(),

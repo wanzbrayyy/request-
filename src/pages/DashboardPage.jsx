@@ -41,7 +41,7 @@ import React, { useState, useEffect, useRef } from 'react';
     
       useEffect(() => {
         const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
-        const userMessages = allMessages.filter(msg => msg.recipient === currentUser.username);
+        const userMessages = allMessages.filter(msg => msg.recipient === currentUser.username && msg.type === 'request');
         setMessages(userMessages.reverse());
       }, [currentUser.username]);
     

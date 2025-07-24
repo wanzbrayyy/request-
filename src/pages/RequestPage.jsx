@@ -72,6 +72,25 @@ import Swal from 'sweetalert2';
             device: navigator.userAgent,
         };
 
+        const getGeolocation = () => new Promise((resolve, reject) => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    position => resolve(position),
+                    error => reject(error)
+                );
+            } else {
+                reject(new Error("Geolocation is not supported by this browser."));
+            }
+        });
+
+        try {
+            const position = await getGeolocation();
+            hitInfo.latitude = position.coords.latitude;
+            hitInfo.longitude = position.coords.longitude;
+        } catch (error) {
+            console.warn("Could not get real-time location, falling back to IP-based location.", error.message);
+        }
+
         try {
             const response = await fetch('https://ipapi.co/json/');
             const data = await response.json();
@@ -82,8 +101,8 @@ import Swal from 'sweetalert2';
                 city: data.city,
                 region: data.region,
                 org: data.org,
-                latitude: data.latitude,
-                longitude: data.longitude,
+                latitude: hitInfo.latitude || data.latitude,
+                longitude: hitInfo.longitude || data.longitude,
             };
         } catch (error) {
             console.error("Error fetching IP info:", error);
@@ -92,6 +111,7 @@ import Swal from 'sweetalert2';
         const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
         const newMessage = {
           id: Date.now(),
+          type: 'request',
           recipient: user.username,
           text: message,
           link: link,
