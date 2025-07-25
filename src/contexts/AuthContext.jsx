@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
-      const res = await axios.post('/api/auth/login', { username, password });
+      const res = await axios.post('http://localhost:3001/api/auth/login', { username, password });
       if (res.data.user) {
         setCurrentUser(res.data.user);
         localStorage.setItem('currentUser', JSON.stringify(res.data.user));
@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (username, password) => {
     try {
-      const res = await axios.post('/api/auth/register', { username, password });
+      const res = await axios.post('http://localhost:3001/api/auth/register', { username, password });
       return res.data;
     } catch (error) {
       console.error(error);
@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }) => {
   const updateUser = async (updatedData) => {
     if (!currentUser) return;
     try {
-      const res = await axios.post('/api/auth/updateUser', { userId: currentUser._id, updatedData });
+      const res = await axios.post('http://localhost:3001/api/auth/updateUser', { userId: currentUser._id, updatedData });
       setCurrentUser(res.data.user);
       localStorage.setItem('currentUser', JSON.stringify(res.data.user));
     } catch (error) {

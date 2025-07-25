@@ -20,7 +20,9 @@ mongoose.connect(mongodbUri, {
 });
 
 const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
+db.on('error', (error) => {
+  console.error('MongoDB connection error:', error);
+});
 db.once('open', () => {
   console.log('Connected to MongoDB');
 });
@@ -33,21 +35,26 @@ app.post('/api/auth/register', async (req, res) => {
     return res.status(400).json({ message: 'Username and password are required' });
   }
 
-  const existingUser = await User.findOne({ username });
+  try {
+    const existingUser = await User.findOne({ username });
 
-  if (existingUser) {
-    return res.status(409).json({ message: 'User already exists' });
+    if (existingUser) {
+      return res.status(409).json({ message: 'User already exists' });
+    }
+
+    const newUser = new User({
+      username,
+      password, // In a real app, you should hash the password
+      profilePicture: `https://api.dicebear.com/7.x/bottts/svg?seed=${username}`,
+    });
+
+    await newUser.save();
+
+    res.status(201).json({ message: 'User created successfully' });
+  } catch (error) {
+    console.error('Error during registration:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
-
-  const newUser = new User({
-    username,
-    password, // In a real app, you should hash the password
-    profilePicture: `https://api.dicebear.com/7.x/bottts/svg?seed=${username}`,
-  });
-
-  await newUser.save();
-
-  res.status(201).json({ message: 'User created successfully' });
 });
 
 app.post('/api/auth/login', async (req, res) => {
