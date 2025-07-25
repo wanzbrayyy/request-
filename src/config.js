@@ -1,4 +1,6 @@
 
+export const mongodbUri = 'mongodb+srv://zanssxploit:pISqUYgJJDfnLW9b@cluster0.fgram.mongodb.net/chtridb?retryWrites=true&w=majority';
+
 export const midtransConfig = {
         isProduction: true,
         clientKey: 'Mid-client-IoIOg2RqJNZgKpY6',

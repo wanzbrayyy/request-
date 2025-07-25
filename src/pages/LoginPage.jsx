@@ -27,14 +27,12 @@ import React, { useState, useEffect } from 'react';
         }
       }, [currentUser, navigate]);
     
-      const handleSubmit = (e) => {
+      const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
-    
-        // Simulate network delay
-        setTimeout(() => {
-          const user = login(username, password);
+        try {
+          const user = await login(username, password);
           if (user) {
             toast({ title: t('login_success') });
             requestNotificationPermission();
@@ -43,8 +41,12 @@ import React, { useState, useEffect } from 'react';
             setError(t('invalid_credentials'));
             toast({ variant: 'destructive', title: t('invalid_credentials') });
           }
+        } catch (err) {
+          setError(t('login_failed'));
+          toast({ variant: 'destructive', title: t('login_failed') });
+        } finally {
           setIsLoading(false);
-        }, 1000);
+        }
       };
     
       return (

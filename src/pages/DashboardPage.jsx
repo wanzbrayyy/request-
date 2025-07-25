@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
     import { useAuth } from '@/contexts/AuthContext';
     import { useTranslation } from 'react-i18next';
     import { Helmet } from 'react-helmet';
@@ -39,33 +40,52 @@ import InstallAppAlert from '@/components/InstallAppAlert';
       const [messages, setMessages] = useState([]);
       const [selectedMessage, setSelectedMessage] = useState(null);
       const [showInstallAlert, setShowInstallAlert] = useState(false);
+      const [deferredPrompt, setDeferredPrompt] = useState(null);
       const messageCardRef = useRef(null);
 
       useEffect(() => {
-        const appInstalled = localStorage.getItem('appInstalled');
-        if (!appInstalled) {
+        window.addEventListener('beforeinstallprompt', (e) => {
+          e.preventDefault();
+          setDeferredPrompt(e);
           setShowInstallAlert(true);
+        });
+
+        window.addEventListener('appinstalled', () => {
+          localStorage.setItem('appInstalled', 'true');
+          setShowInstallAlert(false);
+        });
+
+        const appInstalled = localStorage.getItem('appInstalled');
+        if (appInstalled) {
+          setShowInstallAlert(false);
         }
       }, []);
 
-      const handleInstall = () => {
-        // In a real scenario, you would point to your GitHub releases page
-        window.open('https://github.com/your-repo/your-project/releases', '_blank');
-        localStorage.setItem('appInstalled', 'true');
-        const newHitCount = (currentUser.hitCount || 0) + 20;
-        updateUser({ hitCount: newHitCount });
-        setShowInstallAlert(false);
-        toast({
-          title: "Thank you for installing!",
-          description: "20 hits have been added to your account.",
-        });
+      const handleInstall = async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            const newHitCount = (currentUser.hitCount || 0) + 20;
+            updateUser({ hitCount: newHitCount });
+            toast({
+              title: "Thank you for installing!",
+              description: "20 hits have been added to your account.",
+            });
+          }
+          setDeferredPrompt(null);
+        }
       };
     
       useEffect(() => {
-        const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
-        const userMessages = allMessages.filter(msg => msg.recipient === currentUser.username && msg.type === 'request');
-        setMessages(userMessages.reverse());
-      }, [currentUser.username]);
+        const fetchMessages = async () => {
+          if (currentUser) {
+            const res = await axios.get(`/api/messages?recipient=${currentUser.username}`);
+            setMessages(res.data.messages);
+          }
+        };
+        fetchMessages();
+      }, [currentUser]);
     
       const handleHitInfo = (message) => {
         if (currentUser.plan === 'premium') {

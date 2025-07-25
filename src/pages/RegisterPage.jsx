@@ -20,16 +20,21 @@
       const [password, setPassword] = useState('');
       const [error, setError] = useState('');
     
-      const handleSubmit = (e) => {
+      const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        const newUser = register(username, password);
-        if (newUser) {
-          toast({ title: t('register_success') });
-          navigate('/login');
-        } else {
-          setError(t('user_exists'));
-          toast({ variant: 'destructive', title: t('user_exists') });
+        try {
+          const res = await register(username, password);
+          if (res && res.message === 'User created successfully') {
+            toast({ title: t('register_success') });
+            navigate('/login');
+          } else {
+            setError(t('user_exists'));
+            toast({ variant: 'destructive', title: t('user_exists') });
+          }
+        } catch (err) {
+          setError(t('register_failed'));
+          toast({ variant: 'destructive', title: t('register_failed') });
         }
       };
     
