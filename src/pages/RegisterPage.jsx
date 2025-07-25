@@ -28,13 +28,15 @@
           if (res && res.message === 'User created successfully') {
             toast({ title: t('register_success') });
             navigate('/login');
-          } else {
-            setError(t('user_exists'));
-            toast({ variant: 'destructive', title: t('user_exists') });
           }
         } catch (err) {
-          setError(t('register_failed'));
-          toast({ variant: 'destructive', title: t('register_failed') });
+          if (err.response && err.response.status === 409) {
+            setError(t('user_exists'));
+            toast({ variant: 'destructive', title: t('user_exists') });
+          } else {
+            setError(t('register_failed'));
+            toast({ variant: 'destructive', title: t('register_failed') });
+          }
         }
       };
     

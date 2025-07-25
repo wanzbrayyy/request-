@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
       return res.data;
     } catch (error) {
       console.error(error);
-      return null;
+      throw error;
     }
   };
 
