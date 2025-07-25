@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "android": "cap run android"
+    "android": "cap run android",
+    "start": "node server.js"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.2",
@@ -28,7 +29,9 @@
     "axios": "^1.11.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "cors": "^2.8.5",
     "emoji-mart": "^5.6.0",
+    "express": "^5.1.0",
     "framer-motion": "^10.16.4",
     "html2canvas": "^1.4.1",
     "i18next": "^23.7.16",
