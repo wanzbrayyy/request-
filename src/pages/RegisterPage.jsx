@@ -25,7 +25,7 @@
         setError('');
         try {
           const res = await register(username, password);
-          if (res && res.message === 'User created successfully') {
+          if (res && res.token) {
             toast({ title: t('register_success') });
             navigate('/login');
           }

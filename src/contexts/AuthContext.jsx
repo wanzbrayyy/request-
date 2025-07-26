@@ -13,8 +13,10 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
-    if (user) {
+    const token = localStorage.getItem('token');
+    if (user && token) {
       setCurrentUser(user);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     }
     setLoading(false);
   }, []);
@@ -25,6 +27,8 @@ export const AuthProvider = ({ children }) => {
       if (res.data.user) {
         setCurrentUser(res.data.user);
         localStorage.setItem('currentUser', JSON.stringify(res.data.user));
+        localStorage.setItem('token', res.data.token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
         return res.data.user;
       }
       return null;
@@ -47,6 +51,8 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setCurrentUser(null);
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('token');
+    delete axios.defaults.headers.common['Authorization'];
   };
 
   const updateUser = async (updatedData) => {
