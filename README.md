@@ -12,6 +12,13 @@ Pastikan Anda telah menginstal perangkat lunak berikut di komputer Anda:
 
 ## Langkah-langkah Instalasi
 
+### Catatan untuk Pengguna Windows
+
+- **Gunakan PowerShell atau Command Prompt:** Semua perintah di bawah ini harus dijalankan di terminal seperti PowerShell atau Command Prompt. Sebaiknya jalankan sebagai Administrator.
+- **Masalah `npx` tidak dikenali:** Jika Anda mendapatkan galat seperti `npx is not recognized`, ini berarti Node.js tidak terinstal dengan benar di `PATH` sistem Anda.
+    - **Solusi:** Instal ulang Node.js dari [nodejs.org](https://nodejs.org/). Selama instalasi, pastikan Anda mencentang kotak yang bertuliskan **"Automatically add to PATH"** atau opsi serupa.
+    - Setelah instalasi, **tutup dan buka kembali** jendela terminal Anda agar perubahan `PATH` dapat diterapkan.
+
 ### 1. Kloning Repositori
 
 Buka terminal atau command prompt Anda dan kloning repositori ini ke direktori lokal Anda menggunakan perintah berikut:
