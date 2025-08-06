@@ -13,6 +13,7 @@ import React, { useEffect } from 'react';
     import PaymentSuccessPage from '@/pages/PaymentSuccessPage';
     import LearnMorePage from '@/pages/LearnMorePage';
     import DmPage from '@/pages/DmPage';
+    import ChatPage from '@/pages/ChatPage';
     import { requestNotificationPermission } from '@/utils/notifications';
     
     const PrivateRoute = ({ children }) => {
@@ -47,6 +48,7 @@ import React, { useEffect } from 'react';
                 <Route path="/upgrade" element={<PrivateRoute><UpgradePage /></PrivateRoute>} />
                 <Route path="/payment-success" element={<PrivateRoute><PaymentSuccessPage /></PrivateRoute>} />
                 <Route path="/dm" element={<PrivateRoute><DmPage /></PrivateRoute>} />
+                <Route path="/dm/:chatUsername" element={<PrivateRoute><ChatPage /></PrivateRoute>} />
               </Route>
             </Routes>
           </Router>

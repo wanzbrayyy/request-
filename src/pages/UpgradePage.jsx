@@ -62,7 +62,7 @@ import React, { useEffect } from 'react';
         });
       };
     
-      const handleMidtransUpgrade = () => {
+      const handleMidtransUpgrade = async () => {
         if (!midtransConfig.clientKey || midtransConfig.clientKey.includes('YOUR_MIDTRANS')) {
             toast({
                 variant: "destructive",
@@ -71,13 +71,57 @@ import React, { useEffect } from 'react';
             });
             return;
         }
-        
-        toast({
-          title: t('feature_not_implemented'),
-          description: "Midtrans Snap requires a backend to generate a token. This is a frontend-only demo.",
-        });
-        // In a real app with a backend, you would fetch a snapToken from your server
-        // and then call window.snap.pay(snapToken);
+
+        try {
+            // In a real app, you would fetch this from your backend.
+            // For this demo, we'll simulate a backend call.
+            const snapToken = await new Promise(resolve => setTimeout(() => resolve(`demo_token_${Date.now()}`), 500));
+
+            window.snap.pay(snapToken, {
+                onSuccess: function(result){
+                    /* You may add your own implementation here */
+                    console.log(result);
+                    toast({
+                        title: "Payment Success",
+                        description: "Your premium features are now unlocked!",
+                    });
+                    // Here you would typically update the user's status in your database
+                    // and redirect to a success page.
+                    window.location.href = '/payment-success';
+                },
+                onPending: function(result){
+                    /* You may add your own implementation here */
+                    console.log(result);
+                    toast({
+                        title: "Payment Pending",
+                        description: "Waiting for your payment.",
+                    });
+                },
+                onError: function(result){
+                    /* You may add your own implementation here */
+                    console.log(result);
+                    toast({
+                        variant: "destructive",
+                        title: "Payment Error",
+                        description: "Something went wrong with the payment.",
+                    });
+                },
+                onClose: function(){
+                    /* You may add your own implementation here */
+                    toast({
+                        title: "Payment Closed",
+                        description: "You closed the payment popup.",
+                    });
+                }
+            });
+        } catch (error) {
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Could not initiate Midtrans payment.",
+            });
+            console.error("Midtrans error:", error);
+        }
       };
     
       return (

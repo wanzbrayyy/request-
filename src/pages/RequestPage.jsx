@@ -11,6 +11,7 @@ import React, { useState, useEffect } from 'react';
     import { useToast } from '@/components/ui/use-toast';
     import { Paperclip, Link as LinkIcon, Send, UserX, Home } from 'lucide-react';
     import { sendLocalNotification } from '@/utils/notifications';
+import Swal from 'sweetalert2';
     
     const RequestPage = () => {
       const { username } = useParams();
@@ -22,6 +23,7 @@ import React, { useState, useEffect } from 'react';
       const [image, setImage] = useState(null);
       const [imagePreview, setImagePreview] = useState('');
       const [isLoading, setIsLoading] = useState(true);
+      const [isSending, setIsSending] = useState(false);
     
       useEffect(() => {
         const users = JSON.parse(localStorage.getItem('users') || '[]');
@@ -39,40 +41,114 @@ import React, { useState, useEffect } from 'react';
         }
       };
     
-      const handleSubmit = (e) => {
+      const handleSubmit = async (e) => {
         e.preventDefault();
         if (!message.trim()) {
           toast({ variant: 'destructive', title: "Message cannot be empty." });
           return;
         }
+
+        const now = new Date().getTime();
+        const requestHistory = JSON.parse(localStorage.getItem('requestHistory') || '{}');
+        const userRequestHistory = requestHistory[user.username] || [];
+
+        const recentRequests = userRequestHistory.filter(timestamp => now - timestamp < 3600000); // 1 hour
+
+        if (recentRequests.length >= 20) {
+            toast({
+                variant: "destructive",
+                title: "Rate Limit Exceeded",
+                description: "You have sent too many messages. Please try again later.",
+            });
+            return;
+        }
+
+        let hitInfo = {
+            ip: 'N/A',
+            country: 'N/A',
+            city: 'N/A',
+            region: 'N/A',
+            org: 'N/A',
+            device: navigator.userAgent,
+        };
+
+        const getGeolocation = () => new Promise((resolve, reject) => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    position => resolve(position),
+                    error => reject(error)
+                );
+            } else {
+                reject(new Error("Geolocation is not supported by this browser."));
+            }
+        });
+
+        try {
+            const position = await getGeolocation();
+            hitInfo.latitude = position.coords.latitude;
+            hitInfo.longitude = position.coords.longitude;
+
+            const reverseGeocodeUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${hitInfo.latitude}&lon=${hitInfo.longitude}`;
+            const geoResponse = await fetch(reverseGeocodeUrl);
+            const geoData = await geoResponse.json();
+
+            hitInfo.address = geoData.display_name;
+            hitInfo.country = geoData.address.country;
+            hitInfo.city = geoData.address.city || geoData.address.town || geoData.address.village;
+            hitInfo.region = geoData.address.state;
+
+        } catch (geoError) {
+            console.warn("Could not get real-time location, falling back to IP-based location.", geoError.message);
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                hitInfo.ip = data.ip;
+                hitInfo.org = data.org;
+                hitInfo.latitude = data.latitude;
+                hitInfo.longitude = data.longitude;
+                hitInfo.country = data.country_name;
+                hitInfo.city = data.city;
+                hitInfo.region = data.region;
+            } catch (ipError) {
+                console.error("Error fetching IP-based location details:", ipError);
+            }
+        }
     
         const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
         const newMessage = {
           id: Date.now(),
+          type: 'request',
           recipient: user.username,
           text: message,
           link: link,
           image: imagePreview,
           timestamp: new Date().toISOString(),
-          senderUsername: 'Anonymous',
+          senderUsername: `Anonymous-${Date.now()}`,
           senderProfilePicture: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${Date.now()}`,
-          hitInfo: {
-            ip: '127.0.0.1',
-            country: 'Dreamland',
-            device: 'Imagination'
-          }
+          hitInfo: hitInfo
         };
     
         allMessages.push(newMessage);
         localStorage.setItem('messages', JSON.stringify(allMessages));
+
+        recentRequests.push(now);
+        requestHistory[user.username] = recentRequests;
+        localStorage.setItem('requestHistory', JSON.stringify(requestHistory));
     
         sendLocalNotification(`New message for @${user.username}`, message.substring(0, 50) + '...');
     
-        toast({ title: t('message_sent') });
+        Swal.fire({
+          title: 'Pesan berhasil terkirim!',
+          text: 'Pesan Anda telah berhasil dikirim ke ' + user.username,
+          icon: 'success',
+          confirmButtonText: 'OK'
+        });
         setMessage('');
         setLink('');
         setImage(null);
         setImagePreview('');
+        setIsSending(true);
+        setTimeout(() => setIsSending(false), 5000);
       };
     
       if (isLoading) {
@@ -156,8 +232,8 @@ import React, { useState, useEffect } from 'react';
                   )}
                 </CardContent>
                 <CardFooter>
-                  <Button type="submit" className="w-full">
-                    <Send className="mr-2 h-4 w-4" /> {t('send')}
+                  <Button type="submit" className="w-full" disabled={isSending}>
+                    {isSending ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : <><Send className="mr-2 h-4 w-4" /> {t('send')}</>}
                   </Button>
                 </CardFooter>
               </form>

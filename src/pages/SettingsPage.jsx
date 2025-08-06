@@ -43,6 +43,32 @@
         navigator.clipboard.writeText(link);
         toast({ title: t('link_copied') });
       };
+
+      const handleLocationActivation = () => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              toast({
+                title: "Location Activated",
+                description: `Latitude: ${position.coords.latitude}, Longitude: ${position.coords.longitude}`,
+              });
+            },
+            (error) => {
+              toast({
+                variant: "destructive",
+                title: "Location Error",
+                description: error.message,
+              });
+            }
+          );
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Geolocation not supported",
+            description: "Your browser does not support geolocation.",
+          });
+        }
+      };
     
       return (
         <>
@@ -93,6 +119,16 @@
                     <div className={`flex items-center gap-2 p-3 rounded-lg ${currentUser.plan === 'premium' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-secondary'}`}>
                       {currentUser.plan === 'premium' ? <Crown className="h-5 w-5 text-yellow-400" /> : <span className="font-bold">🆓</span>}
                       <span className="font-semibold capitalize">{t(`${currentUser.plan}_plan`)}</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Location Tracking</Label>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-secondary">
+                      <p className="text-sm text-muted-foreground">Allow location tracking for enhanced features.</p>
+                      <Button type="button" onClick={handleLocationActivation}>
+                        Activate Location
+                      </Button>
                     </div>
                   </div>
     

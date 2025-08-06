@@ -6,6 +6,7 @@ import React from 'react';
     import { Button } from '@/components/ui/button';
     import LanguageSwitcher from '@/components/LanguageSwitcher';
     import BottomNav from '@/components/BottomNav';
+    import OfflineNotifier from '@/components/OfflineNotifier';
     import { Mail, ArrowLeft, Send } from 'lucide-react';
     
     const MainLayout = () => {
@@ -60,6 +61,7 @@ import React from 'react';
           <main className="flex-grow container mx-auto px-4 py-8 pb-24 md:pb-8">
             <Outlet />
           </main>
+          <OfflineNotifier />
           {currentUser && <BottomNav />}
         </div>
       );

@@ -11,18 +11,74 @@ import React, { useState, useEffect, useRef } from 'react';
     import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
     import { Download, Link as LinkIcon, Eye, ShieldAlert } from 'lucide-react';
     import { useToast } from '@/components/ui/use-toast';
+import InstallAppAlert from '@/components/InstallAppAlert';
     
+    const getOs = (userAgent) => {
+        if (/android/i.test(userAgent)) {
+            return "Android";
+        }
+        if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+            return "iOS";
+        }
+        if (/Win/.test(userAgent)) {
+            return "Windows";
+        }
+        if (/Mac/.test(userAgent)) {
+            return "MacOS";
+        }
+        if (/Linux/.test(userAgent)) {
+            return "Linux";
+        }
+        return "Unknown";
+    };
+
     const DashboardPage = () => {
       const { currentUser, updateUser } = useAuth();
       const { t } = useTranslation();
       const { toast } = useToast();
       const [messages, setMessages] = useState([]);
       const [selectedMessage, setSelectedMessage] = useState(null);
+      const [showInstallAlert, setShowInstallAlert] = useState(false);
+      const [deferredPrompt, setDeferredPrompt] = useState(null);
       const messageCardRef = useRef(null);
+
+      useEffect(() => {
+        window.addEventListener('beforeinstallprompt', (e) => {
+          e.preventDefault();
+          setDeferredPrompt(e);
+          setShowInstallAlert(true);
+        });
+
+        window.addEventListener('appinstalled', () => {
+          localStorage.setItem('appInstalled', 'true');
+          setShowInstallAlert(false);
+        });
+
+        const appInstalled = localStorage.getItem('appInstalled');
+        if (appInstalled) {
+          setShowInstallAlert(false);
+        }
+      }, []);
+
+      const handleInstall = async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            const newHitCount = (currentUser.hitCount || 0) + 20;
+            updateUser({ hitCount: newHitCount });
+            toast({
+              title: "Thank you for installing!",
+              description: "20 hits have been added to your account.",
+            });
+          }
+          setDeferredPrompt(null);
+        }
+      };
     
       useEffect(() => {
         const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
-        const userMessages = allMessages.filter(msg => msg.recipient === currentUser.username);
+        const userMessages = allMessages.filter(msg => msg.recipient === currentUser.username && msg.type === 'request');
         setMessages(userMessages.reverse());
       }, [currentUser.username]);
     
@@ -76,6 +132,7 @@ import React, { useState, useEffect, useRef } from 'react';
             transition={{ duration: 0.5 }}
             className="space-y-6"
           >
+            {showInstallAlert && <InstallAppAlert onInstall={handleInstall} />}
             <h1 className="text-3xl font-bold tracking-tight">{t('inbox')}</h1>
             {messages.length === 0 ? (
               <Card className="text-center py-12 glassmorphism">
@@ -147,15 +204,32 @@ import React, { useState, useEffect, useRef } from 'react';
                       <CardContent>
                         {currentUser.plan === 'premium' || (currentUser.hitCount > 0 && currentUser.hitCount <= 10) ? (
                           <ul className="space-y-2 text-sm">
-                            <li><strong>{t('ip_address')}:</strong> {selectedMessage.hitInfo.ip}</li>
-                            <li><strong>{t('country')}:</strong> {selectedMessage.hitInfo.country}</li>
-                            <li><strong>{t('device')}:</strong> {selectedMessage.hitInfo.device}</li>
+                            <li><strong>Alamat Terdeteksi:</strong> {selectedMessage.hitInfo.address || 'N/A'}</li>
+                            <li><strong>IP Lokasi:</strong> {selectedMessage.hitInfo.ip}</li>
+                            <li><strong>Koordinat:</strong> {`${selectedMessage.hitInfo.latitude}, ${selectedMessage.hitInfo.longitude}`}</li>
+                            <li><strong>Negara:</strong> {selectedMessage.hitInfo.country}</li>
+                            <li><strong>Perangkat:</strong> {getOs(selectedMessage.hitInfo.device)}</li>
+                            <li><strong>ISP:</strong> {selectedMessage.hitInfo.org}</li>
                           </ul>
                         ) : (
                           <div className="text-center text-muted-foreground">
                             <ShieldAlert className="mx-auto h-8 w-8 mb-2" />
                             <p>{t('upgrade_to_premium')}</p>
                           </div>
+                        )}
+                        {selectedMessage.hitInfo.latitude && selectedMessage.hitInfo.longitude && (
+                            <div className="mt-4">
+                                <iframe
+                                    width="100%"
+                                    height="200"
+                                    frameBorder="0"
+                                    scrolling="no"
+                                    marginHeight="0"
+                                    marginWidth="0"
+                                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${selectedMessage.hitInfo.longitude-0.01},${selectedMessage.hitInfo.latitude-0.01},${selectedMessage.hitInfo.longitude+0.01},${selectedMessage.hitInfo.latitude+0.01}&layer=mapnik&marker=${selectedMessage.hitInfo.latitude},${selectedMessage.hitInfo.longitude}`}
+                                    style={{ border: '1px solid black', borderRadius: '8px' }}
+                                ></iframe>
+                            </div>
                         )}
                       </CardContent>
                     </Card>

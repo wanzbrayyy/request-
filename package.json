@@ -6,9 +6,16 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "android": "cap run android"
   },
   "dependencies": {
+    "@capacitor/android": "^7.4.2",
+    "@capacitor/cli": "^7.4.2",
+    "@capacitor/core": "^7.4.2",
+    "@emoji-mart/data": "^1.2.1",
+    "@emoji-mart/react": "^1.1.1",
+    "@lottiefiles/dotlottie-react": "^0.14.4",
     "@radix-ui/react-alert-dialog": "^1.0.5",
     "@radix-ui/react-avatar": "^1.0.4",
     "@radix-ui/react-checkbox": "^1.0.4",
@@ -20,6 +27,7 @@
     "@radix-ui/react-toast": "^1.1.5",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "emoji-mart": "^5.6.0",
     "framer-motion": "^10.16.4",
     "html2canvas": "^1.4.1",
     "i18next": "^23.7.16",
@@ -30,6 +38,7 @@
     "react-helmet": "^6.1.0",
     "react-i18next": "^14.0.0",
     "react-router-dom": "^6.16.0",
+    "sweetalert2": "^11.22.2",
     "tailwind-merge": "^1.14.0",
     "tailwindcss-animate": "^1.0.7"
   },
