@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
     import { useAuth } from '@/contexts/AuthContext';
     import { useTranslation } from 'react-i18next';
     import { Helmet } from 'react-helmet';
@@ -77,10 +78,14 @@ import InstallAppAlert from '@/components/InstallAppAlert';
       };
     
       useEffect(() => {
-        const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
-        const userMessages = allMessages.filter(msg => msg.recipient === currentUser.username && msg.type === 'request');
-        setMessages(userMessages.reverse());
-      }, [currentUser.username]);
+        const fetchMessages = async () => {
+          if (currentUser) {
+            const res = await axios.get(`/api/messages?recipient=${currentUser.username}`);
+            setMessages(res.data.messages);
+          }
+        };
+        fetchMessages();
+      }, [currentUser]);
     
       const handleHitInfo = (message) => {
         if (currentUser.plan === 'premium') {
